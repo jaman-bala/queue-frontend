@@ -1,0 +1,18 @@
+.input {
+    padding: 10px;
+    border-radius: 4px;
+    border: none;
+    background-color: var(--light-color);
+    outline: none;
+    min-width: 50px;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
+
+    &.readonly {
+        background-color: var(--light-color);
+    }
+
+    &.disabled {
+        background-color: var(--gray-color);
+        cursor: not-allowed;
+    }
+}

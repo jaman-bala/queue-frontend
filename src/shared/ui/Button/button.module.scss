@@ -1,0 +1,55 @@
+.button {
+    border-radius: 4px;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 400;
+    font-family: inherit;
+    color: var(--light-color);
+    background-color: var(--secondary-color);
+    cursor: pointer;
+    transition: all 0.25s;
+
+    &:hover {
+        background-color: var(--secondary-hovered);
+    }
+
+    &:focus,
+    &:focus-visible {
+        outline: 4px auto -webkit-focus-ring-color;
+    }
+
+    &.disabled {
+        background-color: var(--secondary-disabled);
+        cursor: not-allowed;
+
+        &:hover {
+            background-color: var(--secondary-disabled);
+        }
+    }
+
+    &.loading {
+        cursor: not-allowed;
+        padding: 10px 30px;
+    }
+}
+
+.loader {
+    width: 17px;
+    height: 17px;
+    border: 2px solid #fff;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

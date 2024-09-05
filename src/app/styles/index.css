@@ -1,0 +1,21 @@
+:root {
+    --primary-color: #3e78b2;
+    --secondary-color: #004ba8;
+    --gray-color: #4a525a;
+    --light-color: #f6faff;
+    --dark-color: #07070a;
+
+    --secondary-hovered: #00306b;
+    --secondary-disabled: #486282;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    margin: 0;
+}
