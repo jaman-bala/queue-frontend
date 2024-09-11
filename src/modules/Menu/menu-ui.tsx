@@ -47,7 +47,7 @@ export default function Menu() {
                     sx={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        backgroundColor: '#66c6ef',
+                        backgroundColor: '#1976d2',
                     }}
                 >
                     <Box sx={{ display: 'flex', flexDirection: 'row' }}>

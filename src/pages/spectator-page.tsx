@@ -1,11 +1,10 @@
-import QueueCards from '@modules/Queue/queue-cards-ui';
-import { Alert, Box, Snackbar } from '@mui/material';
+import { Alert, Box, Button, Snackbar } from '@mui/material';
 import useAuth from '@shared/hooks/useAuth';
 import { instance } from '@shared/utils/axios-instance';
 import { socket } from '@shared/utils/socket';
-import { useState, useEffect, useContext } from 'react';
-import { QueueResponse } from '@shared/utils/types';
+import { useState, useEffect } from 'react';
 import InProgressQueue from '@modules/Queue/in-progress-queue';
+import { playNotificationSound } from '@shared/utils/speech';
 
 const OperatorPage = () => {
     const [inProgressTickets, setInProgressTickets] = useState<
@@ -77,6 +76,8 @@ const OperatorPage = () => {
                     ),
                 ];
 
+                playNotificationSound();
+
                 return newArray;
             });
         });
@@ -137,6 +138,13 @@ const OperatorPage = () => {
                     <InProgressQueue items={inProgressTickets} />
                 </Box>
             </Box>
+            <Button
+                onClick={() => {
+                    playNotificationSound();
+                }}
+            >
+                Слушать
+            </Button>
             <Snackbar
                 open={openSnackbar}
                 autoHideDuration={6000}

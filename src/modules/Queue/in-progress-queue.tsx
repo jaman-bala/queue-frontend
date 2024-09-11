@@ -1,4 +1,4 @@
-import { Box, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 interface InProgressQueueProps {
     items:
@@ -15,30 +15,45 @@ const InProgressQueue = (props: InProgressQueueProps) => {
     const length = items ? items.length > 0 : false;
 
     const content = length ? (
-        <List>
-            {items &&
-                items.slice(0, 5).map((item) => (
-                    <ListItem
-                        key={item.ticketNumber}
-                        sx={{
-                            backgroundColor: '#66c6ef',
-                            borderRadius: '10px',
-                            marginBottom: '10px',
-                            color: '#fff',
-                            textAlign: 'center',
-                        }}
-                    >
-                        <ListItemText
-                            primary={
-                                <Typography
-                                    variant="h4"
-                                    fontWeight={600}
-                                >{`${item.ticketNumber} - ${item.windowNumber}`}</Typography>
-                            }
-                        />
-                    </ListItem>
-                ))}
-        </List>
+        items &&
+        items.slice(0, 5).map((item) => (
+            <Box
+                key={item.ticketNumber}
+                sx={{ display: 'flex', justifyContent: 'space-between' }}
+            >
+                <Typography
+                    variant="h4"
+                    fontWeight={600}
+                    sx={{
+                        backgroundColor: '#1976d2',
+                        borderRadius: '10px',
+                        marginBottom: '10px',
+                        padding: '30px',
+                        color: '#fff',
+                        marginRight: '20px',
+                        textAlign: 'center',
+                    }}
+                >
+                    {`${item.ticketNumber}` + ''}
+                </Typography>
+
+                <Typography
+                    variant="h4"
+                    fontWeight={600}
+                    sx={{
+                        backgroundColor: '#1976d2',
+                        borderRadius: '10px',
+                        marginBottom: '10px',
+                        width: '100px',
+                        padding: '30px',
+                        color: '#fff',
+                        textAlign: 'center',
+                    }}
+                >
+                    {`${item.windowNumber}`}
+                </Typography>
+            </Box>
+        ))
     ) : (
         <Typography
             variant="h5"
@@ -53,11 +68,21 @@ const InProgressQueue = (props: InProgressQueueProps) => {
         <Box
             sx={{
                 width: '400px',
-                padding: '30px',
-                boxShadow: '2px 2px 10px 2px',
+                padding: '15px',
                 borderRadius: '10px',
             }}
         >
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginBottom: '20px',
+                }}
+            >
+                <Typography variant="h5">Номер талона</Typography>
+                <Typography variant="h5">Окно</Typography>
+            </Box>
+
             {content}
         </Box>
     );

@@ -1,16 +1,4 @@
-import {
-    Alert,
-    Box as BoxUI,
-    // Button,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Paper,
-    Select as SelectUI,
-    Snackbar,
-    TextField,
-    Typography,
-} from '@mui/material';
+import { Alert, Snackbar } from '@mui/material';
 import { Box } from '@shared/ui/Box';
 import { Input } from '@shared/ui/Input';
 import { Select } from '@shared/ui/Select';
@@ -93,8 +81,6 @@ const LoginPage = () => {
     const handleCloseSnackbar = () => {
         setOpenSnackbar(false);
     };
-
-    console.log(role);
 
     return (
         <>
