@@ -35,7 +35,6 @@ const OperatorPage = () => {
         socket.emit('join-department', departmentIdAuth);
         socket.on('ticket-added', (data) => {
             const { ticket } = data;
-            console.log(ticket);
             if (ticket.type === 'TS') {
                 setTicketsTs((prev) => [...prev, ticket.ticketNumber]);
             } else if (ticket.type === 'VS') {
@@ -58,9 +57,30 @@ const OperatorPage = () => {
             });
         });
 
+        socket.on('take-pause-specialist', (data) => {
+            const { windowNumber } = data;
+            setInProgressTickets((prev = []) => {
+                return prev.filter(
+                    (item) => item.windowNumber !== windowNumber,
+                );
+            });
+        });
+
+        socket.on('logout-specialist-frontend', (data) => {
+            const { windowNumber } = data;
+            console.log(windowNumber);
+            setInProgressTickets((prev = []) => {
+                return prev.filter(
+                    (item) => item.windowNumber !== windowNumber,
+                );
+            });
+        });
+
         socket.on('ticket-in-progress', (data) => {
             const { ticket, windowNumber, hasQueues } = data;
+
             console.log(data);
+
             if (ticket.type === 'TS') {
                 setTicketsTs((prev) =>
                     prev.filter((t) => t !== ticket.ticketNumber),
@@ -71,33 +91,33 @@ const OperatorPage = () => {
                 );
             }
             setInProgressTickets((prev = []) => {
-                const updatedItem = prev.find(
+                let updatedItem = prev.find(
                     (item) => item.windowNumber === windowNumber,
                 );
 
+                console.log(windowNumber);
+
+                if (!updatedItem) {
+                    updatedItem = {
+                        windowNumber: windowNumber,
+                        ticketNumber: ticket.ticketNumber,
+                    };
+                }
+
+                if (updatedItem) {
+                    updatedItem.ticketNumber = ticket.ticketNumber;
+                }
+
                 const newArray = [
+                    ...(updatedItem ? [updatedItem] : []),
                     ...prev.filter(
                         (item) => item.windowNumber !== windowNumber,
-                    ),
-                    ...(updatedItem
-                        ? [
-                              {
-                                  ...updatedItem,
-                                  ticketNumber: ticket.ticketNumber,
-                              },
-                          ]
-                        : []),
-                    ...prev.filter(
-                        (item) =>
-                            item.windowNumber !== windowNumber &&
-                            item.ticketNumber !== ticket.ticketNumber,
                     ),
                 ];
 
                 return newArray;
             });
             setResponseLoading(false);
-            console.log(hasQueues);
             if (hasQueues) {
                 if (setPrintData) {
                     setPrintData({
@@ -112,6 +132,9 @@ const OperatorPage = () => {
         return () => {
             socket.off('ticket-added');
             socket.off('ticket-in-progress');
+            socket.off('logout-specialist-frontend');
+            socket.off('take-pause-specialist');
+            socket.off('specialist-available');
         };
     }, []);
 
@@ -132,6 +155,7 @@ const OperatorPage = () => {
                 setOpenSnackbar(true);
                 setResponseLoading(false);
             } else {
+                console.log(response);
                 const ticketNumbersTs = response.data.tsTickets.map(
                     (ticket: QueueResponse) => ticket.ticketNumber,
                 );
@@ -146,6 +170,7 @@ const OperatorPage = () => {
         } catch (error) {
             setTicketsTs([]);
             setTicketsVs([]);
+            console.log(error);
             setSnackbarMessage('Ошибка при загрузке данных');
             setSnackbarSeverity('error');
             setOpenSnackbar(true);
@@ -178,7 +203,6 @@ const OperatorPage = () => {
                 <Box
                     sx={{
                         display: 'flex',
-                        justifyContent: 'center',
                         alignItems: 'center',
                         flexDirection: 'column',
                     }}
@@ -194,7 +218,6 @@ const OperatorPage = () => {
                     sx={{
                         display: 'flex',
                         justifyContent: 'center',
-                        alignItems: 'center',
                     }}
                 >
                     <InProgressQueue items={inProgressTickets} />
@@ -202,7 +225,6 @@ const OperatorPage = () => {
                 <Box
                     sx={{
                         display: 'flex',
-                        justifyContent: 'center',
                         alignItems: 'center',
                         flexDirection: 'column',
                     }}

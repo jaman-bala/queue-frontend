@@ -1,6 +1,6 @@
+import { InputHTMLAttributes, useState } from 'react';
+import { Field, Input as InputUI, Label } from '@headlessui/react';
 import clsx from 'clsx';
-import { InputHTMLAttributes } from 'react';
-import { Input as InputUI } from '@headlessui/react';
 import cls from './input.module.scss';
 
 type HTMLInputProps = Omit<
@@ -11,9 +11,10 @@ type HTMLInputProps = Omit<
 interface InputProps extends HTMLInputProps {
     classNames?: string;
     value?: string | number;
-    onChange?: (value: string) => void;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
     readonly?: boolean;
     label?: string;
+    fullWidth?: boolean;
     disabled?: boolean;
 }
 
@@ -25,25 +26,39 @@ export const Input = (props: InputProps) => {
         onChange,
         label,
         disabled,
+        fullWidth,
         ...otherProps
     } = props;
+
+    const [focused, setFocused] = useState(false);
+
     const modes = {
-        [cls.readonly]: readonly,
+        [cls.focused]: focused,
         [cls.disabled]: disabled,
+        [cls.fullWidth]: fullWidth,
     };
-    const labelElem = label && <p className={cls.label}>{label}</p>;
+
+    const handleFocus = () => setFocused(true);
+    const handleBlur = () => setFocused(false);
+
+    const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onChange?.(e);
+    };
+
     return (
-        <div>
-            {/* {labelElem} */}
+        <Field className={clsx(cls.inputWrapper, modes)}>
             <InputUI
                 className={clsx(cls.input, classNames, modes)}
                 value={value}
                 disabled={disabled}
-                onChange={(e) => onChange?.(e.target.value)}
                 readOnly={readonly}
-                placeholder={label}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                onChange={onChangeHandler}
+                placeholder=" "
                 {...otherProps}
             />
-        </div>
+            <Label className={cls.label}>{label}</Label>
+        </Field>
     );
 };

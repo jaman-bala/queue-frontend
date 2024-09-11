@@ -1,27 +1,41 @@
 import {
     Alert,
-    Box,
-    Button,
+    Box as BoxUI,
+    // Button,
     FormControl,
     InputLabel,
     MenuItem,
     Paper,
-    Select,
+    Select as SelectUI,
     Snackbar,
     TextField,
     Typography,
 } from '@mui/material';
+import { Box } from '@shared/ui/Box';
+import { Input } from '@shared/ui/Input';
+import { Select } from '@shared/ui/Select';
+import { Button } from '@shared/ui/Button';
+import cls from './login-page.module.scss';
 import useAuth from '@shared/hooks/useAuth';
 import { instance } from '@shared/utils/axios-instance';
 import { AxiosError } from 'axios';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const roles = ['TS', 'VS'];
+const roles = [
+    {
+        content: 'TS',
+        id: 'TS',
+    },
+    {
+        content: 'VS',
+        id: 'VS',
+    },
+];
 
 const LoginPage = () => {
     const [windowNumber, setWindowNumber] = useState<string | undefined>('');
-    const [role, setRole] = useState<string | undefined>('');
+    const [role, setRole] = useState<string | undefined>(roles[0].content);
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [responseLoading, setResponseLoading] = useState<boolean>(false);
@@ -80,107 +94,64 @@ const LoginPage = () => {
         setOpenSnackbar(false);
     };
 
+    console.log(role);
+
     return (
         <>
             <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    margin: '20px 200px',
-                }}
+                classNames={cls.wrapper}
+                direction="column"
+                justify="center"
+                align="center"
             >
-                <Typography variant="h3" component="h3" sx={{ width: '600px' }}>
-                    Добро пожаловать в систему отслеживания очередей!
-                </Typography>
-                <Paper
-                    sx={{
-                        backgroundColor: '#fff',
-                        padding: '20px',
-                        borderRadius: '10px',
-                        width: '600px',
-                        boxShadow: '2px 2px 10px 2px',
-                    }}
+                <Box
+                    shadow
+                    card
+                    classNames={cls.login}
+                    direction="column"
+                    justify="center"
+                    align="center"
                 >
-                    <TextField
-                        fullWidth
+                    <Input
                         label="Логин"
-                        variant="outlined"
+                        type="text"
+                        fullWidth
                         disabled={responseLoading}
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        sx={{
-                            backgroundColor: '#fff',
-                            borderRadius: '10px',
-                            borderBottom: 'none',
-                        }}
                     />
-                    <TextField
-                        fullWidth
+                    <Input
                         label="Пароль"
                         type="password"
-                        variant="outlined"
+                        fullWidth
                         disabled={responseLoading}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        sx={{
-                            backgroundColor: '#fff',
-                            borderRadius: '10px',
-                            marginTop: '30px',
-                        }}
                     />
-                    <FormControl
+                    <Select
+                        items={roles}
+                        onChange={(value) => setRole(value.content)}
+                        classNames={cls.windowNumber}
                         fullWidth
-                        sx={{
-                            marginTop: '30px',
-                            minWidth: 120,
-                            backgroundColor: '#fff',
-                            borderRadius: '10px',
-                        }}
-                        variant="outlined"
-                        disabled={responseLoading}
-                    >
-                        <InputLabel id="role-label-id">Роль</InputLabel>
-                        <Select
-                            labelId="role-label-id"
-                            value={role}
-                            label="Роль"
-                            disabled={responseLoading}
-                            onChange={(e) => setRole(e.target.value)}
-                        >
-                            {roles.map((role) => {
-                                return (
-                                    <MenuItem key={role} value={role}>
-                                        {role}
-                                    </MenuItem>
-                                );
-                            })}
-                        </Select>
-                    </FormControl>
-                    <TextField
-                        fullWidth
+                    />
+                    <Input
                         label="Номер окна"
                         type="number"
-                        variant="outlined"
+                        fullWidth
                         disabled={responseLoading}
                         value={windowNumber}
                         onChange={(e) => setWindowNumber(e.target.value)}
-                        sx={{
-                            backgroundColor: '#fff',
-                            borderRadius: '10px',
-                            marginTop: '30px',
-                        }}
                     />
                     <Button
                         fullWidth
-                        sx={{ mt: '30px', height: '50px', fontWeight: '600' }}
-                        variant="outlined"
                         disabled={responseLoading}
                         onClick={handleLogin}
+                        variant="secondary"
+                        classNames={cls.button}
                     >
                         Войти
                     </Button>
-                </Paper>
+                </Box>
             </Box>
             <Snackbar
                 open={openSnackbar}

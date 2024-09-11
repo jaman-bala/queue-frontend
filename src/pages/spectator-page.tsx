@@ -1,4 +1,3 @@
-import AddQueue from '@modules/Queue/add-queue-ui';
 import QueueCards from '@modules/Queue/queue-cards-ui';
 import { Alert, Box, Snackbar } from '@mui/material';
 import useAuth from '@shared/hooks/useAuth';
@@ -6,14 +5,9 @@ import { instance } from '@shared/utils/axios-instance';
 import { socket } from '@shared/utils/socket';
 import { useState, useEffect, useContext } from 'react';
 import { QueueResponse } from '@shared/utils/types';
-import { useNavigate } from 'react-router-dom';
-import { PrintContext } from '@app/providers/print-provider/print-provider';
-import { formattedDate } from '@shared/utils/date-helpers';
 import InProgressQueue from '@modules/Queue/in-progress-queue';
 
-const SpectatorPage = () => {
-    const [ticketsTs, setTicketsTs] = useState<string[]>([]);
-    const [ticketsVs, setTicketsVs] = useState<string[]>([]);
+const OperatorPage = () => {
     const [inProgressTickets, setInProgressTickets] = useState<
         {
             windowNumber: string;
@@ -30,15 +24,6 @@ const SpectatorPage = () => {
 
     useEffect(() => {
         socket.emit('join-department', departmentIdAuth);
-        socket.on('ticket-added', (data) => {
-            const { ticket } = data;
-            console.log(ticket);
-            if (ticket.type === 'TS') {
-                setTicketsTs((prev) => [...prev, ticket.ticketNumber]);
-            } else if (ticket.type === 'VS') {
-                setTicketsVs((prev) => [...prev, ticket.ticketNumber]);
-            }
-        });
 
         socket.on('specialist-available', (data) => {
             const { windowNumber } = data;
@@ -47,39 +32,48 @@ const SpectatorPage = () => {
             });
         });
 
-        socket.on('ticket-in-progress', (data) => {
-            const { ticket, windowNumber, hasQueues } = data;
-            console.log(data);
-            if (ticket.type === 'TS') {
-                setTicketsTs((prev) =>
-                    prev.filter((t) => t !== ticket.ticketNumber),
-                );
-            } else if (ticket.type === 'VS') {
-                setTicketsVs((prev) =>
-                    prev.filter((t) => t !== ticket.ticketNumber),
-                );
-            }
+        socket.on('take-pause-specialist', (data) => {
+            const { windowNumber } = data;
             setInProgressTickets((prev = []) => {
-                const updatedItem = prev.find(
+                return prev.filter(
+                    (item) => item.windowNumber !== windowNumber,
+                );
+            });
+        });
+
+        socket.on('logout-specialist-frontend', (data) => {
+            const { windowNumber } = data;
+            console.log(windowNumber);
+            setInProgressTickets((prev = []) => {
+                return prev.filter(
+                    (item) => item.windowNumber !== windowNumber,
+                );
+            });
+        });
+
+        socket.on('ticket-in-progress', (data) => {
+            const { ticket, windowNumber } = data;
+
+            setInProgressTickets((prev = []) => {
+                let updatedItem = prev.find(
                     (item) => item.windowNumber === windowNumber,
                 );
 
+                if (!updatedItem) {
+                    updatedItem = {
+                        windowNumber: windowNumber,
+                        ticketNumber: ticket.ticketNumber,
+                    };
+                }
+
+                if (updatedItem) {
+                    updatedItem.ticketNumber = ticket.ticketNumber;
+                }
+
                 const newArray = [
+                    ...(updatedItem ? [updatedItem] : []),
                     ...prev.filter(
                         (item) => item.windowNumber !== windowNumber,
-                    ),
-                    ...(updatedItem
-                        ? [
-                              {
-                                  ...updatedItem,
-                                  ticketNumber: ticket.ticketNumber,
-                              },
-                          ]
-                        : []),
-                    ...prev.filter(
-                        (item) =>
-                            item.windowNumber !== windowNumber &&
-                            item.ticketNumber !== ticket.ticketNumber,
                     ),
                 ];
 
@@ -90,6 +84,9 @@ const SpectatorPage = () => {
         return () => {
             socket.off('ticket-added');
             socket.off('ticket-in-progress');
+            socket.off('logout-specialist-frontend');
+            socket.off('take-pause-specialist');
+            socket.off('specialist-available');
         };
     }, []);
 
@@ -108,31 +105,13 @@ const SpectatorPage = () => {
                 setSnackbarSeverity('error');
                 setOpenSnackbar(true);
             } else {
-                const ticketNumbersTs = response.data.tsTickets.map(
-                    (ticket: QueueResponse) => ticket.ticketNumber,
-                );
-                const ticketNumbersVs = response.data.vsTickets.map(
-                    (ticket: QueueResponse) => ticket.ticketNumber,
-                );
-                setTicketsTs(ticketNumbersTs);
-                setTicketsVs(ticketNumbersVs);
                 setInProgressTickets(response.data.inProgressTickets);
             }
         } catch (error) {
-            setTicketsTs([]);
-            setTicketsVs([]);
             setSnackbarMessage('Ошибка при загрузке данных');
             setSnackbarSeverity('error');
             setOpenSnackbar(true);
         }
-    };
-
-    const handleAddQueue = (ticketType: 'TS' | 'VS') => {
-        const departmentId = departmentIdAuth;
-        socket.emit('add-new-ticket', {
-            departmentId,
-            ticketType,
-        });
     };
 
     const handleCloseSnackbar = () => {
@@ -153,29 +132,9 @@ const SpectatorPage = () => {
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        flexDirection: 'column',
-                    }}
-                >
-                    <QueueCards items={ticketsVs} ticketType="ВС" />
-                </Box>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
                     }}
                 >
                     <InProgressQueue items={inProgressTickets} />
-                </Box>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        flexDirection: 'column',
-                    }}
-                >
-                    <QueueCards items={ticketsTs} ticketType="ТС" />
                 </Box>
             </Box>
             <Snackbar
@@ -196,4 +155,4 @@ const SpectatorPage = () => {
     );
 };
 
-export default SpectatorPage;
+export default OperatorPage;

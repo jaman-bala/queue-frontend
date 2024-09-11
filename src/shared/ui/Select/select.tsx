@@ -5,47 +5,99 @@ import {
     ListboxButton,
     ListboxOptions,
     ListboxOption,
+    Field,
 } from '@headlessui/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Icon } from '../Icon';
+import DownArrow from '@shared/assets/icons/alt-arrow-down-svgrepo-com.svg';
 
-interface SelectOption {
+export interface SelectOption {
     content: string;
-    value: string;
+    id: number | string;
 }
 
 interface SelectProps {
-    onChange: (item: string) => void;
+    onChange: (item: SelectOption) => void;
+    disabled?: boolean;
+    loading?: boolean;
     classNames?: string;
+    label?: string;
+    fullWidth?: boolean;
     items: SelectOption[];
 }
 
 export const Select = (props: SelectProps) => {
-    const { onChange, classNames, items } = props;
-    const [selectedValue, setSelectedValue] = useState<string>(
-        items[0].content,
-    );
+    const { onChange, classNames, items, fullWidth, label, disabled, loading } =
+        props;
+    const [selectedValue, setSelectedValue] = useState<SelectOption>(items[0]);
+    const [open, setOpen] = useState<boolean>(false);
+    const ref = useRef<HTMLDivElement | null>(null);
 
-    const onChangeHandler = (value: string) => {
-        setSelectedValue(value);
-        onChange(value);
+    const modes = {
+        [cls.fullWidth]: fullWidth,
+        [cls.open]: open,
+        [cls.loading]: loading,
+        [cls.disabled]: disabled,
     };
 
+    const icon = <Icon className={cls.icon} Svg={DownArrow} />;
+
+    const onChangeHandler = (value: SelectOption) => {
+        setSelectedValue(value);
+        onChange(value);
+        setOpen(false);
+    };
+
+    const openHandler = () => {
+        setOpen((prev) => !prev);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
+
+        if (open) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
+
     return (
-        <Listbox value={selectedValue} onChange={onChangeHandler}>
-            <ListboxButton className={cls.listbutton}>
-                {selectedValue}
-            </ListboxButton>
-            <ListboxOptions anchor="bottom">
-                {items.map((person) => (
-                    <ListboxOption
-                        key={person.value}
-                        value={person}
-                        className={cls.listoption}
+        <Field disabled={disabled} className={clsx(cls.field, modes)}>
+            {label && <p className={clsx(cls.label, modes)}>{label}</p>}
+            <div ref={ref}>
+                <Listbox value={selectedValue} onChange={onChangeHandler}>
+                    <ListboxButton
+                        className={clsx(classNames, cls.listButton, modes)}
+                        onClick={openHandler}
                     >
-                        {person.content}
-                    </ListboxOption>
-                ))}
-            </ListboxOptions>
-        </Listbox>
+                        {selectedValue.content}
+                        {icon}
+                    </ListboxButton>
+                    <ListboxOptions
+                        className={clsx(cls.listboxOptions, modes)}
+                        anchor="bottom"
+                    >
+                        {items.map((person) => (
+                            <ListboxOption
+                                key={person.id}
+                                value={person}
+                                className={clsx(cls.listOption, modes)}
+                            >
+                                {person.content}
+                            </ListboxOption>
+                        ))}
+                    </ListboxOptions>
+                </Listbox>
+            </div>
+        </Field>
     );
 };

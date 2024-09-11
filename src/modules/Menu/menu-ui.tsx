@@ -9,9 +9,10 @@ import useAuth from '@shared/hooks/useAuth';
 import { instance } from '@shared/utils/axios-instance';
 import { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { socket } from '@shared/utils/socket';
 
 export default function Menu() {
-    const { userId, sessionId } = useAuth();
+    const { userId, sessionId, roleName, departmentId } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -20,10 +21,18 @@ export default function Menu() {
                 '/auth/logout',
                 {
                     sessionId,
+                    userId,
                 },
             );
             if (!response.data) {
                 return console.log('something went wrong when logout');
+            }
+            if (roleName === 'specialist') {
+                socket.emit('logout-specialist-backend', {
+                    userId,
+                    sessionId,
+                    departmentId,
+                });
             }
             localStorage.removeItem('token');
             navigate('/');
@@ -35,7 +44,11 @@ export default function Menu() {
         <Box sx={{ flexGrow: 1 }}>
             <AppBar position="static">
                 <Toolbar
-                    sx={{ display: 'flex', justifyContent: 'space-between' }}
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        backgroundColor: '#66c6ef',
+                    }}
                 >
                     <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                         <IconButton

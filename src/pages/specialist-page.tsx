@@ -70,7 +70,8 @@ const SpecialistPage = () => {
 
     useEffect(() => {
         socket.emit('join-department', departmentId);
-        socket.on('ticket-in-progress', (data) => {
+        socket.emit('join-session', sessionId);
+        socket.on('ticket-in-progress-spec', (data) => {
             const { ticket } = data;
             setCurrentQueue(ticket);
             setSnackbarMessage('Следуйщий клиент');
@@ -78,14 +79,15 @@ const SpecialistPage = () => {
             setOpenSnackbar(true);
             setResponseLoading(false);
         });
-        socket.on('specialist-available', (data) => {
+        socket.on('specialist-available-spec', (data) => {
             console.log(data);
             setCurrentQueue(null);
             setResponseLoading(false);
         });
 
         return () => {
-            socket.off('ticket-in-progress');
+            socket.off('ticket-in-progress-spec');
+            socket.off('specialist-available-spec');
         };
     }, []);
 

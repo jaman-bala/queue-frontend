@@ -7,6 +7,9 @@
 
     --secondary-hovered: #00306b;
     --secondary-disabled: #486282;
+    --light-color-hovered: #e1e3e6;
+    --light-color-active: #caccce;
+    --light-color-focus: #9b9c9c;
 }
 
 * {
@@ -17,5 +20,6 @@
 
 body {
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    background-color: var(--light-color);
     margin: 0;
 }

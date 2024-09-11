@@ -21,14 +21,20 @@ const InProgressQueue = (props: InProgressQueueProps) => {
                     <ListItem
                         key={item.ticketNumber}
                         sx={{
-                            backgroundColor: '#3e78e8',
+                            backgroundColor: '#66c6ef',
                             borderRadius: '10px',
                             marginBottom: '10px',
                             color: '#fff',
+                            textAlign: 'center',
                         }}
                     >
                         <ListItemText
-                            primary={`${item.ticketNumber} - ${item.windowNumber}`}
+                            primary={
+                                <Typography
+                                    variant="h4"
+                                    fontWeight={600}
+                                >{`${item.ticketNumber} - ${item.windowNumber}`}</Typography>
+                            }
                         />
                     </ListItem>
                 ))}

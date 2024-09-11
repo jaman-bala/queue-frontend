@@ -18,7 +18,7 @@ const QueueCards = (props: QueueCardsProps) => {
                         <ListItem
                             key={item}
                             sx={{
-                                backgroundColor: '#3e78e8',
+                                backgroundColor: '#66c6ef',
                                 borderRadius: '10px',
                                 color: '#fff',
                                 width: '230px',
@@ -49,7 +49,7 @@ const QueueCards = (props: QueueCardsProps) => {
                     <ListItem
                         key={items[items.length - 1]}
                         sx={{
-                            backgroundColor: '#3e78e8',
+                            backgroundColor: '#66c6ef',
                             borderRadius: '10px',
                             marginBottom: '10px',
                             color: '#fff',

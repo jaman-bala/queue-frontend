@@ -18,7 +18,6 @@ const AddQueue = (props: AddQueueProps) => {
                 backgroundColor: '#fff',
                 borderRadius: '10px',
                 boxShadow: '2px 2px 10px 2px',
-                marginRight: ticketType === 'TS' ? '20px' : 0,
             }}
         >
             <Typography
@@ -29,7 +28,12 @@ const AddQueue = (props: AddQueueProps) => {
             </Typography>
             <Button
                 fullWidth
-                sx={{ mt: '10px', height: '50px', width: '230px' }}
+                sx={{
+                    backgroundColor: '#66c6ef',
+                    mt: '10px',
+                    height: '50px',
+                    width: '230px',
+                }}
                 variant="contained"
                 disabled={loading}
                 onClick={handleClick}
