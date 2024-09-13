@@ -37,6 +37,13 @@ const PrintPage = () => {
                 каражаттарын жана айдоочулук курамды каттоо боюнча мамлекеттик
                 агенттик
             </Typography>
+            <Typography
+                variant="body1"
+                textAlign="center"
+                sx={{ mb: '20px', width: '320px' }}
+            >
+                {printData?.departmentName}
+            </Typography>
             <Typography variant="h1" sx={{ mb: '30px' }}>
                 {printData?.ticket}
             </Typography>

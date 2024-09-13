@@ -13,6 +13,7 @@ const ProtectedRoute = (props: ProtectedRouteProps) => {
 
     useEffect(() => {
         if (!userId) {
+            console.log(userId);
             navigate('/');
         }
     }, []);

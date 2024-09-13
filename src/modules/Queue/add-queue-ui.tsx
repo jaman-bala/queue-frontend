@@ -1,8 +1,9 @@
 import { Box, Button, Typography } from '@mui/material';
+import { QueuesTypes } from '@shared/types/queues-types';
 
 interface AddQueueProps {
-    ticketType: 'TS' | 'VS';
-    onAddQueue: (e: 'TS' | 'VS') => void;
+    ticketType: QueuesTypes;
+    onAddQueue: (e: QueuesTypes) => void;
     loading: boolean;
 }
 

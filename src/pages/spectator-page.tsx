@@ -138,13 +138,6 @@ const OperatorPage = () => {
                     <InProgressQueue items={inProgressTickets} />
                 </Box>
             </Box>
-            <Button
-                onClick={() => {
-                    playNotificationSound();
-                }}
-            >
-                Слушать
-            </Button>
             <Snackbar
                 open={openSnackbar}
                 autoHideDuration={6000}

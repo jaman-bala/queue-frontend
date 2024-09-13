@@ -9,19 +9,15 @@ import { QueueResponse } from '@shared/utils/types';
 import { useNavigate } from 'react-router-dom';
 import { PrintContext } from '@app/providers/print-provider/print-provider';
 import { formattedDate } from '@shared/utils/date-helpers';
-import InProgressQueue from '@modules/Queue/in-progress-queue';
+import { QueuesTypes } from '@shared/types/queues-types';
 
 const OperatorPage = () => {
-    const [ticketsTs, setTicketsTs] = useState<string[]>([]);
+    const [ticketsTsF, setTicketsTsF] = useState<string[]>([]);
     const [ticketsVs, setTicketsVs] = useState<string[]>([]);
+    const [ticketsGr, setTicketsGr] = useState<string[]>([]);
+    const [ticketsTsY, setTicketsTsY] = useState<string[]>([]);
     const [responseLoading, setResponseLoading] = useState<boolean>(false);
     const { setPrintData } = useContext(PrintContext);
-    const [inProgressTickets, setInProgressTickets] = useState<
-        {
-            windowNumber: string;
-            ticketNumber: string;
-        }[]
-    >();
 
     const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
     const [snackbarMessage, setSnackbarMessage] = useState<string>('');
@@ -35,14 +31,19 @@ const OperatorPage = () => {
         socket.emit('join-department', departmentIdAuth);
         socket.on('ticket-added', (data) => {
             const { ticket } = data;
-            if (ticket.type === 'TS') {
-                setTicketsTs((prev) => [...prev, ticket.ticketNumber]);
+            if (ticket.type === 'TSY') {
+                setTicketsTsY((prev) => [...prev, ticket.ticketNumber]);
+            } else if (ticket.type === 'TSF') {
+                setTicketsTsF((prev) => [...prev, ticket.ticketNumber]);
+            } else if (ticket.type === 'GR') {
+                setTicketsGr((prev) => [...prev, ticket.ticketNumber]);
             } else if (ticket.type === 'VS') {
                 setTicketsVs((prev) => [...prev, ticket.ticketNumber]);
             }
             if (setPrintData) {
                 setPrintData({
                     ticket: data.ticket.ticketNumber,
+                    departmentName: data.departmentName,
                     createdAt: formattedDate(data.ticket.createdAt),
                 });
             }
@@ -50,39 +51,19 @@ const OperatorPage = () => {
             setResponseLoading(false);
         });
 
-        socket.on('specialist-available', (data) => {
-            const { windowNumber } = data;
-            setInProgressTickets((prev = []) => {
-                return prev.filter((t) => t.windowNumber !== windowNumber);
-            });
-        });
-
-        socket.on('take-pause-specialist', (data) => {
-            const { windowNumber } = data;
-            setInProgressTickets((prev = []) => {
-                return prev.filter(
-                    (item) => item.windowNumber !== windowNumber,
-                );
-            });
-        });
-
-        socket.on('logout-specialist-frontend', (data) => {
-            const { windowNumber } = data;
-            console.log(windowNumber);
-            setInProgressTickets((prev = []) => {
-                return prev.filter(
-                    (item) => item.windowNumber !== windowNumber,
-                );
-            });
-        });
-
         socket.on('ticket-in-progress', (data) => {
-            const { ticket, windowNumber, hasQueues } = data;
-
+            const { ticket, departmentName, hasQueues } = data;
             console.log(data);
-
-            if (ticket.type === 'TS') {
-                setTicketsTs((prev) =>
+            if (ticket.type === 'TSY') {
+                setTicketsTsY((prev) =>
+                    prev.filter((t) => t !== ticket.ticketNumber),
+                );
+            } else if (ticket.type === 'TSF') {
+                setTicketsTsF((prev) =>
+                    prev.filter((t) => t !== ticket.ticketNumber),
+                );
+            } else if (ticket.type === 'GR') {
+                setTicketsGr((prev) =>
                     prev.filter((t) => t !== ticket.ticketNumber),
                 );
             } else if (ticket.type === 'VS') {
@@ -90,38 +71,12 @@ const OperatorPage = () => {
                     prev.filter((t) => t !== ticket.ticketNumber),
                 );
             }
-            setInProgressTickets((prev = []) => {
-                let updatedItem = prev.find(
-                    (item) => item.windowNumber === windowNumber,
-                );
-
-                console.log(windowNumber);
-
-                if (!updatedItem) {
-                    updatedItem = {
-                        windowNumber: windowNumber,
-                        ticketNumber: ticket.ticketNumber,
-                    };
-                }
-
-                if (updatedItem) {
-                    updatedItem.ticketNumber = ticket.ticketNumber;
-                }
-
-                const newArray = [
-                    ...(updatedItem ? [updatedItem] : []),
-                    ...prev.filter(
-                        (item) => item.windowNumber !== windowNumber,
-                    ),
-                ];
-
-                return newArray;
-            });
             setResponseLoading(false);
             if (hasQueues) {
                 if (setPrintData) {
                     setPrintData({
                         ticket: data.ticket.ticketNumber,
+                        departmentName: departmentName,
                         createdAt: formattedDate(data.ticket.createdAt),
                     });
                 }
@@ -132,9 +87,6 @@ const OperatorPage = () => {
         return () => {
             socket.off('ticket-added');
             socket.off('ticket-in-progress');
-            socket.off('logout-specialist-frontend');
-            socket.off('take-pause-specialist');
-            socket.off('specialist-available');
         };
     }, []);
 
@@ -146,7 +98,6 @@ const OperatorPage = () => {
         setResponseLoading(true);
         try {
             const response = await instance.get(`queues/${departmentIdAuth}`);
-
             if (!response.data) {
                 setSnackbarMessage(
                     'Не могу загрузить данные. Попробуйте обновить страницу.',
@@ -156,19 +107,28 @@ const OperatorPage = () => {
                 setResponseLoading(false);
             } else {
                 console.log(response);
-                const ticketNumbersTs = response.data.tsTickets.map(
+                const ticketNumbersTsF = response.data.tsFTickets.map(
+                    (ticket: QueueResponse) => ticket.ticketNumber,
+                );
+                const ticketNumbersTsY = response.data.tsYTickets.map(
+                    (ticket: QueueResponse) => ticket.ticketNumber,
+                );
+                const ticketNumbersGr = response.data.grTickets.map(
                     (ticket: QueueResponse) => ticket.ticketNumber,
                 );
                 const ticketNumbersVs = response.data.vsTickets.map(
                     (ticket: QueueResponse) => ticket.ticketNumber,
                 );
-                setTicketsTs(ticketNumbersTs);
+                setTicketsTsF(ticketNumbersTsF);
+                setTicketsTsY(ticketNumbersTsY);
+                setTicketsGr(ticketNumbersGr);
                 setTicketsVs(ticketNumbersVs);
-                setInProgressTickets(response.data.inProgressTickets);
                 setResponseLoading(false);
             }
         } catch (error) {
-            setTicketsTs([]);
+            setTicketsTsF([]);
+            setTicketsTsY([]);
+            setTicketsGr([]);
             setTicketsVs([]);
             console.log(error);
             setSnackbarMessage('Ошибка при загрузке данных');
@@ -178,7 +138,7 @@ const OperatorPage = () => {
         }
     };
 
-    const handleAddQueue = (ticketType: 'TS' | 'VS') => {
+    const handleAddQueue = (ticketType: QueuesTypes) => {
         setResponseLoading(true);
         const departmentId = departmentIdAuth;
         socket.emit('add-new-ticket', {
@@ -208,19 +168,11 @@ const OperatorPage = () => {
                     }}
                 >
                     <AddQueue
-                        ticketType="VS"
+                        ticketType="TSF"
                         onAddQueue={handleAddQueue}
                         loading={responseLoading}
                     ></AddQueue>
-                    <QueueCards items={ticketsVs} ticketType="ВС" />
-                </Box>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <InProgressQueue items={inProgressTickets} />
+                    <QueueCards items={ticketsTsF} ticketType="ТС-Ф" />
                 </Box>
                 <Box
                     sx={{
@@ -230,11 +182,39 @@ const OperatorPage = () => {
                     }}
                 >
                     <AddQueue
-                        ticketType="TS"
+                        ticketType="TSY"
                         onAddQueue={handleAddQueue}
                         loading={responseLoading}
                     ></AddQueue>
-                    <QueueCards items={ticketsTs} ticketType="ТС" />
+                    <QueueCards items={ticketsTsY} ticketType="ТС-Ю" />
+                </Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                    }}
+                >
+                    <AddQueue
+                        ticketType="GR"
+                        onAddQueue={handleAddQueue}
+                        loading={responseLoading}
+                    ></AddQueue>
+                    <QueueCards items={ticketsGr} ticketType="ГР" />
+                </Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                    }}
+                >
+                    <AddQueue
+                        ticketType="VS"
+                        onAddQueue={handleAddQueue}
+                        loading={responseLoading}
+                    ></AddQueue>
+                    <QueueCards items={ticketsVs} ticketType="ВС" />
                 </Box>
             </Box>
             <Snackbar

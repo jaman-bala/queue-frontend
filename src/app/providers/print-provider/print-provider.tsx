@@ -3,6 +3,7 @@ import { createContext, ReactNode, useState } from 'react';
 interface PrintData {
     ticket?: string;
     createdAt?: string;
+    departmentName?: string;
 }
 
 interface PrintContextData {

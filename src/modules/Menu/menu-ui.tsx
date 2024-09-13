@@ -57,6 +57,9 @@ export default function Menu() {
                             color="inherit"
                             aria-label="menu"
                             sx={{ mr: 2 }}
+                            onClick={
+                                roleName === 'spectator' ? () => {} : undefined
+                            }
                         >
                             <img src={logo} alt="logo" width={50} />
                         </IconButton>

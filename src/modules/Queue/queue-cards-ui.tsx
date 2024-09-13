@@ -1,10 +1,11 @@
 import { Box, List, ListItem, ListItemText, Typography } from '@mui/material';
 import classes from './queue-cards.module.scss';
+import { QueuesTypesRu } from '@shared/types/queues-types';
 
 interface QueueCardsProps {
     backgroundColor?: string;
     items: string[];
-    ticketType: 'ТС' | 'ВС';
+    ticketType: QueuesTypesRu;
 }
 
 const QueueCards = (props: QueueCardsProps) => {
